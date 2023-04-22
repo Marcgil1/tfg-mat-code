@@ -1,3 +1,101 @@
 #! /usr/bin/python3
+from pathlib import Path
 
-print("Hi")
+numinstances = 3
+
+numclients = 30
+numitems   = 15
+maxprice   = 40
+
+
+def genprices():
+    return numprices, prices, budgets
+
+def genprefs():
+    return PREFERED, KWORSE
+
+def geninstance():
+    numprices, prices, budgets = genprices()
+    PREFERED, KWORSE           = genprefs()
+
+    return {
+        'numclients': numclients,
+        'numitems':   numitems,
+        'numprices':  numprices,
+        'PREFERED':   PREFERED,
+        'KWORSE':     KWORSE,
+        'prices':     prices,
+        'budgets':    budgets
+    }
+
+def getoutdir(datadir):
+    datapath = Path(datadir)
+
+    dirs = [d for d in datapath.glob('*')]
+    dirs = [d for d in dirs if d.is_dir()]
+    dirs = [d.stem for d in dirs]
+    dirs = sorted(dirs)
+    
+    outdir = int(dirs[-1]) + 1
+    outdir = datapath / ('%0.2d' % outdir)
+    outdir.mkdir()
+
+    fds = []
+    for idx in range(numinstances):
+        instancefname = '%s/%0.2d.dat' % (outdir.stem,idx+1)
+        fds          += [open(instancefname, 'w')]
+        
+    puts = []
+    for idx in range(numinstances):
+        puts += [
+            lambda s: print(s, end='\n', file=fds[idx])
+        ]
+    return fds, puts
+
+def printinstance(instance, put):
+    put('param numclients := %d\n' % instance['numclients'])
+    put('param numitems   := %d\n' % instance['numitems'])
+    put('param numprices  := %d\n' % instance['numprices'])
+    put('\n')
+
+    put('set CLIENTS       := 1..numclients\n')
+    put('set ITEMS         := 1..numitems\n')
+    put('set PRICE_INDICES := 1..numprices\n')
+    put('\n')
+
+    for kdx in range(instance['numclients']):
+        put('set PREFERED[%d] :=' % (kdx+1))
+        for idx in instance['PREFERED'][kdx]:
+            put(' %d' % (idx+1))
+        put('\n')
+    put('\n')
+
+    for kdx in range(instance['numclients']):
+        for idx in range(instance['numitems']):
+            put('set KWORSE[%d,%d] :=' % (kdx+1,idx+1))
+            for jdx in range(instance['KWORSE'][kdx,idx]):
+                put(' %d' % (jdx+1))
+            put('\n')
+     put('\n')
+
+     put('param prices :=')
+     for ldx in range(instance['numprices']):
+         ldxprice = instance['prices'][ldx]
+         put('\n    %d %d' % (ldx+1,ldxprice))
+     put(';\n\n')
+
+     put('param budgets :=')
+     for kdx in range(instance['numclients']):
+         ldx = instance['budgets'][kdx]
+         put('\n    %d %d' % (kdx+1, ldx+1)
+     put(';\n\n')
+
+if __name__ == '__main__':
+    fds, puts = getoutdir('data')
+    for put in puts:
+        printinstance(
+            geninstance(),
+            puts[idx]
+        )
+    for fd in fds:
+        fd.close()

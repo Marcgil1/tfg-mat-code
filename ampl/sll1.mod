@@ -2,9 +2,9 @@ param numclients;
 param numitems;
 param numprices;
 
-set CLIENTS       = 1..numclients;
-set ITEMS         = 1..numitems;
-set PRICE_INDICES = 1..numprices;
+set CLIENTS;
+set ITEMS;
+set PRICE_INDICES;
 set PREFERED {CLIENTS}       within ITEMS;
 set KWORSE   {CLIENTS,ITEMS} within ITEMS;
 
