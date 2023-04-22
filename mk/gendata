@@ -1,15 +1,40 @@
 #! /usr/bin/python3
+from bisect  import bisect_left
 from pathlib import Path
 
+import random
+
+randomseed   = 10
 numinstances = 3
 
-numclients = 30
-numitems   = 15
-maxprice   = 40
+numclients    = 30
+numitems      = 15
+maxnumbudgets = 10
+maxbudget     = 20
 
 
 def genprices():
-    return numprices, prices, budgets
+    absbudgets = []
+    for kdx in range(numclients):
+        absbudgets += [
+            random.randint(1, maxbudget)
+        ]
+
+    sabsdudgets = sorted(absbudgets)
+    prices     = [sabsbudgets[0]]
+    for idx in range(1, len(absbudgets)):
+        if sabsbudgets[i] != sabsbudgets[i-1]:
+            prices += [
+                sabsbudgets[i]
+            ]
+
+    budgets = []
+    for kdx in range(numclients):
+        budgets += [
+            bisect_left(prices, absbudgets[kdx])
+        ]
+
+    return len(prices), prices, budgets
 
 def genprefs():
     return PREFERED, KWORSE
@@ -91,6 +116,8 @@ def printinstance(instance, put):
      put(';\n\n')
 
 if __name__ == '__main__':
+    random.seed(randomseed)
+    
     fds, puts = getoutdir('data')
     for put in puts:
         printinstance(
