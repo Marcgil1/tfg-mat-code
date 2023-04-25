@@ -2,8 +2,10 @@
 from bisect  import bisect_left
 from pathlib import Path
 
+import argparse
 import math
 import random
+import sys
 
 randomseed   = 10
 numinstances = 3
@@ -69,9 +71,24 @@ def genprefs():
         
     return PREFERED, KWORSE
 
-def geninstance():
+def gencapacities():
+    capacities = []
+    for idx in range(numitems):
+        capacities += [
+            random.randint(
+                int(numclients*1/4),
+                int(numclients*3/4)
+            )
+        ]
+    return capacities
+
+def geninstance(formulation):
     numprices, prices, budgets = genprices()
     PREFERED, KWORSE           = genprefs()
+    
+    capacities = None
+    if formulation == 'efsll':
+        capacities = gencapacities()
 
     return {
         'numclients': numclients,
@@ -80,22 +97,26 @@ def geninstance():
         'PREFERED':   PREFERED,
         'KWORSE':     KWORSE,
         'prices':     prices,
-        'budgets':    budgets
+        'budgets':    budgets,
+        'capacities': capacities,
     }
 
-def getoutdir(datadir):
-    datapath = Path(datadir)
+def getoutdir(datadir, formulation):
+    formpath = Path(datadir) / formulation
 
-    dirs = [d for d in datapath.glob('*')]
+    if not formpath.exists():
+        formpath.mkdir()
+    
+    dirs = [d for d in formpath.glob('*')]
     dirs = [d for d in dirs if d.is_dir()]
     dirs = [d.stem for d in dirs]
     dirs = sorted(dirs)
 
     if dirs:
         outdir = int(dirs[-1]) + 1
-        outdir = datapath / ('%0.2d' % outdir)
+        outdir = formpath / ('%0.2d' % outdir)
     else:
-        outdir = datapath / '01'
+        outdir = formpath / '01'
     outdir.mkdir()
 
     fds = []
@@ -142,13 +163,32 @@ def printinstance(instance, put):
         put('\n    %d %d' % (kdx+1, ldx+1))
     put(';\n\n')
 
+    if instance['capacities'] is not None:
+        put('param capacities :=')
+        for idx in range(instance['numitems']):
+            cap = instance['capacities'][idx]
+            put('\n    %d %d' % (idx+1, cap))
+        put(';\n\n')
+
+def read_formulation_from_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('formulation')
+    args = parser.parse_args()
+
+    if args.formulation not in ['sll', 'efsll']:
+        sys.exit(1)
+    else:
+        return args.formulation
+
 if __name__ == '__main__':
     random.seed(randomseed)
-    
-    fds = getoutdir('data')
+
+    formulation = read_formulation_from_args()
+
+    fds = getoutdir('data', formulation)
     for fd in fds:
         printinstance(
-            geninstance(),
+            geninstance(formulation),
             get_put(fd)
         )
     for fd in fds:

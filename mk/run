@@ -9,7 +9,7 @@ if __name__ == '__main__':
     ampl.option['solver'] = 'cplex'
     
     ampl.read     ('ampl/sll2.mod')
-    ampl.read_data('data/01/03.dat')
+    ampl.read_data('data/sll/01/03.dat')
     ampl.solve()
 
     print(ampl.get_value('Gains'))
