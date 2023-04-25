@@ -10,6 +10,7 @@ set KWORSE   {CLIENTS,ITEMS} within ITEMS;
 
 param prices  {PRICE_INDICES};
 param budgets {CLIENTS};
+param capacities {ITEMS};
 
 var z {CLIENTS}             integer;
 var x {CLIENTS,ITEMS}       binary;

@@ -76,8 +76,8 @@ def gencapacities():
     for idx in range(numitems):
         capacities += [
             random.randint(
-                int(numclients*1/4),
-                int(numclients*3/4)
+                int(numclients*1/20),
+                int(numclients*2/20)
             )
         ]
     return capacities
