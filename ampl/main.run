@@ -1,0 +1,7 @@
+reset;
+
+option solver "cplex";
+
+model ampl/sll1.mod;
+data  data/01/03.dat;
+solve;

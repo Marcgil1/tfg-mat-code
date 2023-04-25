@@ -1,0 +1,15 @@
+#! /Users/marcgile/miniforge3/bin/python
+import amplpy
+
+AMPL_PATH = '/Users/marcgile/SourceProgs/ampl/ampl'
+
+if __name__ == '__main__':
+    amplpy.add_to_path(AMPL_PATH)
+    ampl = amplpy.AMPL()
+    ampl.option['solver'] = 'cplex'
+    
+    ampl.read     ('ampl/sll2.mod')
+    ampl.read_data('data/01/03.dat')
+    ampl.solve()
+
+    print(ampl.get_value('Gains'))

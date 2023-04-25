@@ -2,9 +2,9 @@ param numclients;
 param numitems;
 param numprices;
 
-set CLIENTS;
-set ITEMS;
-set PRICE_INDICES;
+set CLIENTS       := 1..numclients;
+set ITEMS         := 1..numitems;
+set PRICE_INDICES := 1..numprices;
 set PREFERED {CLIENTS}       within ITEMS;
 set KWORSE   {CLIENTS,ITEMS} within ITEMS;
 
@@ -19,10 +19,10 @@ maximize Gains:
     sum {k in CLIENTS} z[k];
 
 s.t. At_Most_One_Product_For_Each_Client {k in CLIENTS}:
-    sum {i in PREFERED[k]}   x[i,k] <= 1;
+    sum {i in PREFERED[k]}   x[k,i] <= 1;
 
 s.t. At_Most_One_Price_For_Each_Product {i in ITEMS}:
-    sum {l in PRICE_INDICES} v[i,l] <= 1;
+    sum {l in PRICE_INDICES} v[l,i] <= 1;
 
 s.t. Only_Buy_The_Most_Prefered_Products
     {

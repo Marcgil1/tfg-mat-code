@@ -2,6 +2,7 @@
 from bisect  import bisect_left
 from pathlib import Path
 
+import math
 import random
 
 randomseed   = 10
@@ -11,6 +12,7 @@ numclients    = 30
 numitems      = 15
 maxnumbudgets = 10
 maxbudget     = 20
+percpreferred = 15.0
 
 
 def genprices():
@@ -20,12 +22,12 @@ def genprices():
             random.randint(1, maxbudget)
         ]
 
-    sabsdudgets = sorted(absbudgets)
+    sabsbudgets = sorted(absbudgets)
     prices     = [sabsbudgets[0]]
     for idx in range(1, len(absbudgets)):
-        if sabsbudgets[i] != sabsbudgets[i-1]:
+        if sabsbudgets[idx] != sabsbudgets[idx-1]:
             prices += [
-                sabsbudgets[i]
+                sabsbudgets[idx]
             ]
 
     budgets = []
@@ -37,6 +39,34 @@ def genprices():
     return len(prices), prices, budgets
 
 def genprefs():
+    PREFERED = []
+    KWORSE   = []
+    for kdx in range(numclients):
+        pref = random.sample(
+            population=range(numitems),
+            k         =math.ceil(numitems*percpreferred/100)
+        )
+        pref.sort()
+
+        kworse = []
+        for idx in range(numitems):
+            ikworse = []
+            found   = False
+            for item in pref:
+                if item == idx:
+                    found = True
+                    break;
+                else:
+                    ikworse += [item]
+            
+            if found:
+                kworse += [ikworse]
+            else:
+                kworse += [[]]
+                
+        PREFERED += [pref  ]
+        KWORSE   += [kworse]
+        
     return PREFERED, KWORSE
 
 def geninstance():
@@ -60,69 +90,66 @@ def getoutdir(datadir):
     dirs = [d for d in dirs if d.is_dir()]
     dirs = [d.stem for d in dirs]
     dirs = sorted(dirs)
-    
-    outdir = int(dirs[-1]) + 1
-    outdir = datapath / ('%0.2d' % outdir)
+
+    if dirs:
+        outdir = int(dirs[-1]) + 1
+        outdir = datapath / ('%0.2d' % outdir)
+    else:
+        outdir = datapath / '01'
     outdir.mkdir()
 
     fds = []
     for idx in range(numinstances):
-        instancefname = '%s/%0.2d.dat' % (outdir.stem,idx+1)
-        fds          += [open(instancefname, 'w')]
-        
-    puts = []
-    for idx in range(numinstances):
-        puts += [
-            lambda s: print(s, end='\n', file=fds[idx])
-        ]
-    return fds, puts
+        instancefile = outdir / ('%0.2d.dat' % (idx+1))
+        fds          += [open(instancefile, 'w')]
+    return fds
+
+def get_put(fd):
+    def put(s):
+        print(s, end='', file=fd)
+    return put
 
 def printinstance(instance, put):
-    put('param numclients := %d\n' % instance['numclients'])
-    put('param numitems   := %d\n' % instance['numitems'])
-    put('param numprices  := %d\n' % instance['numprices'])
-    put('\n')
-
-    put('set CLIENTS       := 1..numclients\n')
-    put('set ITEMS         := 1..numitems\n')
-    put('set PRICE_INDICES := 1..numprices\n')
+    put('param numclients := %d;\n' % instance['numclients'])
+    put('param numitems   := %d;\n' % instance['numitems'])
+    put('param numprices  := %d;\n' % instance['numprices'])
     put('\n')
 
     for kdx in range(instance['numclients']):
         put('set PREFERED[%d] :=' % (kdx+1))
         for idx in instance['PREFERED'][kdx]:
             put(' %d' % (idx+1))
-        put('\n')
+        put(';\n')
     put('\n')
 
     for kdx in range(instance['numclients']):
         for idx in range(instance['numitems']):
             put('set KWORSE[%d,%d] :=' % (kdx+1,idx+1))
-            for jdx in range(instance['KWORSE'][kdx,idx]):
+            for jdx in instance['KWORSE'][kdx][idx]:
                 put(' %d' % (jdx+1))
-            put('\n')
-     put('\n')
+            put(';\n')
+    put('\n')
 
-     put('param prices :=')
-     for ldx in range(instance['numprices']):
-         ldxprice = instance['prices'][ldx]
-         put('\n    %d %d' % (ldx+1,ldxprice))
-     put(';\n\n')
+    put('param prices :=')
+    for ldx in range(instance['numprices']):
+        ldxprice = instance['prices'][ldx]
+        put('\n    %d %d' % (ldx+1,ldxprice))
+    put(';\n\n')
 
-     put('param budgets :=')
-     for kdx in range(instance['numclients']):
-         ldx = instance['budgets'][kdx]
-         put('\n    %d %d' % (kdx+1, ldx+1)
-     put(';\n\n')
+    put('param budgets :=')
+    for kdx in range(instance['numclients']):
+        ldx = instance['budgets'][kdx]
+        put('\n    %d %d' % (kdx+1, ldx+1))
+    put(';\n\n')
 
 if __name__ == '__main__':
     random.seed(randomseed)
     
-    fds, puts = getoutdir('data')
-    for put in puts:
+    fds = getoutdir('data')
+    for fd in fds:
         printinstance(
             geninstance(),
-            puts[idx]
+            get_put(fd)
         )
     for fd in fds:
         fd.close()
