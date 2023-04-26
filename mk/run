@@ -3,10 +3,16 @@
 import argparse
 import pathlib
 import sys
+import timeit
 
 import amplpy
 
 AMPL_PATH = '/Users/marcgile/SourceProgs/ampl/ampl'
+
+models = {
+    'sll':   ['ampl/sll1.mod',   'ampl/sll2.mod'  ],
+    'efsll': ['ampl/efsll1.mod', 'ampl/efsll2.mod'],
+}
 
 def getampl():
     amplpy.add_to_path(AMPL_PATH)
@@ -36,18 +42,32 @@ def getdata(form, datadir):
         ]
 
     return instances
-    
 
-def runsolver(instances):
+def parse_solve_message(msg):
+    msg = msg.split('\n')[1]
+    msg = msg.split(' ' )[0]
+    return int(msg)
+
+def runsolver(form, instances):
     results = []
-    for instance in instances:
-        ampl.reset()
-        ampl.read     ('ampl/efsll2.mod')
-        ampl.read_data(instance)
-        ampl.eval     ('solve > /dev/null;')
-        results += [
-            ampl.get_value('Gains')
-        ]
+    for model in models[form]:
+        model_res = []
+        for instance in instances:
+            info = []
+            
+            ampl.reset()
+            ampl.read     ('ampl/efsll2.mod')
+            ampl.read_data(instance)
+            time = timeit.timeit(
+                stmt  =lambda: ampl.eval('solve > /dev/null;'),
+                number=1
+            )
+
+            nodes = parse_solve_message(ampl.get_value('solve_message'))
+            sol   =                     ampl.get_value('Gains')
+            
+            model_res += [[nodes, time, sol]]
+        results += [model_res]
 
     return results
 
@@ -65,7 +85,7 @@ if __name__ == '__main__':
     form, datadir = parseargs()
     instances     = getdata  (form, datadir)
     
-    results = runsolver(instances)
+    results = runsolver(form, instances)
 
     printrawresults (form, datadir, results)
     printlatextables(form, datadir, results)
