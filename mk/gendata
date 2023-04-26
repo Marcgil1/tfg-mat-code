@@ -1,20 +1,19 @@
 #! /usr/bin/python3
-from bisect  import bisect_left
-from pathlib import Path
-
 import argparse
+import bisect
 import math
+import pathlib
 import random
 import sys
 
 randomseed   = 10
 numinstances = 3
 
-numclients    = 30
-numitems      = 15
-maxnumbudgets = 10
-maxbudget     = 20
-percpreferred = 15.0
+numclients    =  30
+numitems      =  15
+maxnumbudgets =  10
+maxbudget     =  20
+percpreferred = [10, 25, 50]
 
 
 def genprices():
@@ -35,18 +34,18 @@ def genprices():
     budgets = []
     for kdx in range(numclients):
         budgets += [
-            bisect_left(prices, absbudgets[kdx])
+            bisect.bisect_left(prices, absbudgets[kdx])
         ]
 
     return len(prices), prices, budgets
 
-def genprefs():
+def genprefs(perc):
     PREFERED = []
     KWORSE   = []
     for kdx in range(numclients):
         pref = random.sample(
             population=range(numitems),
-            k         =math.ceil(numitems*percpreferred/100)
+            k         =math.ceil(numitems*float(perc)/100)
         )
         pref.sort()
 
@@ -82,9 +81,9 @@ def gencapacities():
         ]
     return capacities
 
-def geninstance(formulation):
+def geninstance(formulation, perc):
     numprices, prices, budgets = genprices()
-    PREFERED, KWORSE           = genprefs()
+    PREFERED, KWORSE           = genprefs(perc)
     
     capacities = None
     if formulation == 'efsll':
@@ -102,8 +101,7 @@ def geninstance(formulation):
     }
 
 def getoutdir(datadir, formulation):
-    formpath = Path(datadir) / formulation
-
+    formpath  = pathlib.Path(datadir) / formulation
     if not formpath.exists():
         formpath.mkdir()
     
@@ -117,6 +115,12 @@ def getoutdir(datadir, formulation):
         outdir = formpath / ('%0.2d' % outdir)
     else:
         outdir = formpath / '01'
+    outdir.mkdir()
+
+    return outdir
+
+def getfds(outdir, perc):
+    outdir /= str(perc)
     outdir.mkdir()
 
     fds = []
@@ -185,11 +189,13 @@ if __name__ == '__main__':
 
     formulation = read_formulation_from_args()
 
-    fds = getoutdir('data', formulation)
-    for fd in fds:
-        printinstance(
-            geninstance(formulation),
-            get_put(fd)
-        )
-    for fd in fds:
-        fd.close()
+    outdir = getoutdir('data', formulation)
+    for perc in percpreferred:
+        fds = getfds(outdir, perc)
+        for fd in fds:
+            printinstance(
+                geninstance(formulation, perc),
+                get_put(fd)
+            )
+        for fd in fds:
+            fd.close()

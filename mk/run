@@ -14,6 +14,8 @@ models = {
     'efsll': ['ampl/efsll1.mod', 'ampl/efsll2.mod'],
 }
 
+percpreferred = [10, 25, 50]
+
 def getampl():
     amplpy.add_to_path(AMPL_PATH)
     ampl = amplpy.AMPL()
@@ -24,22 +26,27 @@ def getampl():
 def parseargs():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--form',    default='efsll')
-    parser.add_argument('-d', '--datadir', default='01')
+    parser.add_argument('-d', '--datadir', default='02')
     args = parser.parse_args()
 
     return args.form, args.datadir
 
 def getdata(form, datadir):
     datapath = pathlib.Path('data') / form / datadir
-
     if not datapath.is_dir():
         sys.exit(1)
 
-    instances = []
-    for instance in datapath.iterdir():
-        instances += [
-            str(instance)
-        ]
+    instances = {}
+    for perc in percpreferred:
+        percpath = datapath / str(perc)
+        if not percpath.is_dir():
+            sys.exit(1)
+
+        instances[perc] = []
+        for instance in percpath.iterdir():
+            instances[perc] += [
+                str(instance)
+            ]
 
     return instances
 
@@ -52,21 +59,22 @@ def runsolver(form, instances):
     results = []
     for model in models[form]:
         model_res = []
-        for instance in instances:
-            info = []
-            
-            ampl.reset()
-            ampl.read     ('ampl/efsll2.mod')
-            ampl.read_data(instance)
-            time = timeit.timeit(
-                stmt  =lambda: ampl.eval('solve > /dev/null;'),
-                number=1
-            )
+        for perc in percpreferred:
+            perc_res = []
+            for instance in instances[perc]:
+                ampl.reset()
+                ampl.read     (model)
+                ampl.read_data(instance)
+                time = timeit.timeit(
+                    stmt  =lambda: ampl.eval('solve > /dev/null;'),
+                    number=1
+                )
 
-            nodes = parse_solve_message(ampl.get_value('solve_message'))
-            sol   =                     ampl.get_value('Gains')
-            
-            model_res += [[nodes, time, sol]]
+                nodes = parse_solve_message(ampl.get_value('solve_message'))
+                sol   =                     ampl.get_value('Gains')
+                
+                perc_res += [[nodes, time, sol]]
+            model_res += [perc_res]
         results += [model_res]
 
     return results
