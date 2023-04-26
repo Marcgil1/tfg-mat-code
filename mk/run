@@ -1,15 +1,72 @@
 #! /Users/marcgile/miniforge3/bin/python
+#! /usr/bin/python
+import argparse
+import pathlib
+import sys
+
 import amplpy
 
 AMPL_PATH = '/Users/marcgile/SourceProgs/ampl/ampl'
 
-if __name__ == '__main__':
+def getampl():
     amplpy.add_to_path(AMPL_PATH)
     ampl = amplpy.AMPL()
-    ampl.option['solver'] = 'cplex'
-    
-    ampl.read     ('ampl/efsll2.mod')
-    ampl.read_data('data/efsll/01/03.dat')
-    ampl.solve()
+    ampl.option['solver'    ] = 'cplex'
+    ampl.option['solver_msg'] = '0'
+    return ampl
 
-    print(ampl.get_value('Gains'))
+def parseargs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--form',    default='efsll')
+    parser.add_argument('-d', '--datadir', default='01')
+    args = parser.parse_args()
+
+    return args.form, args.datadir
+
+def getdata(form, datadir):
+    datapath = pathlib.Path('data') / form / datadir
+
+    if not datapath.is_dir():
+        sys.exit(1)
+
+    instances = []
+    for instance in datapath.iterdir():
+        instances += [
+            str(instance)
+        ]
+
+    return instances
+    
+
+def runsolver(instances):
+    results = []
+    for instance in instances:
+        ampl.reset()
+        ampl.read     ('ampl/efsll2.mod')
+        ampl.read_data(instance)
+        ampl.eval     ('solve > /dev/null;')
+        results += [
+            ampl.get_value('Gains')
+        ]
+
+    return results
+
+def printrawresults(form, datadir, results):
+    print(results)
+
+def printlatextables(form, datadir, results):
+    pass
+
+def printplots(form, datadir, results):
+    pass
+
+if __name__ == '__main__':
+    ampl          = getampl  ()
+    form, datadir = parseargs()
+    instances     = getdata  (form, datadir)
+    
+    results = runsolver(instances)
+
+    printrawresults (form, datadir, results)
+    printlatextables(form, datadir, results)
+    printplots      (form, datadir, results)

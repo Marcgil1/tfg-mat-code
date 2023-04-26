@@ -172,13 +172,13 @@ def printinstance(instance, put):
 
 def read_formulation_from_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('formulation')
+    parser.add_argument('-f', '--form', default='efsll')
     args = parser.parse_args()
 
-    if args.formulation not in ['sll', 'efsll']:
+    if args.form not in ['sll', 'efsll']:
         sys.exit(1)
     else:
-        return args.formulation
+        return args.form
 
 if __name__ == '__main__':
     random.seed(randomseed)
