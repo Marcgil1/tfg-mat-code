@@ -1,6 +1,7 @@
 #! /Users/marcgile/miniforge3/bin/python
 #! /usr/bin/python
 import argparse
+import csv
 import pathlib
 import sys
 import timeit
@@ -26,7 +27,7 @@ def getampl():
 def parseargs():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--form',    default='efsll')
-    parser.add_argument('-d', '--datadir', default='02')
+    parser.add_argument('-d', '--datadir', default='01')
     args = parser.parse_args()
 
     return args.form, args.datadir
@@ -72,15 +73,42 @@ def runsolver(form, instances):
 
                 nodes = parse_solve_message(ampl.get_value('solve_message'))
                 sol   =                     ampl.get_value('Gains')
-                
-                perc_res += [[nodes, time, sol]]
-            model_res += [perc_res]
-        results += [model_res]
+
+                instance_desc = pathlib.Path(instance)
+                instance_desc = instance_desc.stem
+                perc_res += [(instance_desc, [nodes, time, sol])]
+            model_res += [(perc, perc_res)]
+        model_desc = pathlib.Path(model)
+        model_desc = model_desc.stem
+        results += [(model_desc, model_res)]
 
     return results
 
 def printrawresults(form, datadir, results):
-    print(results)
+    path  = pathlib.Path('results') / form
+    if not path.is_dir():
+        path.mkdir()
+    path /= datadir
+    path.mkdir()
+
+    with open(path / 'raw-output.csv', 'w') as fd:
+        writer = csv.DictWriter(
+            f         =fd,
+            fieldnames=['model', 'perc', 'instance', 'nodes', 'time', 'sol']
+        )
+
+        writer.writeheader()
+        for model, model_res in results:
+            for perc, perc_res in model_res:
+                for instance, (nodes, time, sol) in perc_res:
+                    writer.writerow({
+                        'model':    model,
+                        'perc':     perc,
+                        'instance': instance,
+                        'nodes':    nodes,
+                        'time':     time,
+                        'sol':      sol,
+                    })
 
 def printlatextables(form, datadir, results):
     pass
@@ -94,6 +122,7 @@ if __name__ == '__main__':
     instances     = getdata  (form, datadir)
     
     results = runsolver(form, instances)
+    print(results)
 
     printrawresults (form, datadir, results)
     printlatextables(form, datadir, results)
