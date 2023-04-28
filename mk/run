@@ -2,11 +2,16 @@
 #! /usr/bin/python
 import argparse
 import csv
+import logging
+import math
 import pathlib
 import sys
 import timeit
 
 import amplpy
+
+from rich.logging  import RichHandler
+from rich.progress import Progress
 
 AMPL_PATH  = '/Users/marcgile/SourceProgs/ampl/ampl'
 TIME_LIMIT = 600.0
@@ -23,7 +28,8 @@ latex_model_name = {
     'efsll2': '\ensuremath{\mathbf{(EF-SLL}_2\mathbf{)}}',
 }
 
-numitems      =  15
+numinstances  =   3
+numsitems     = [ 5, 15, 25]
 percpreferred = [10, 25, 50]
 
 def getampl():
@@ -42,23 +48,30 @@ def parseargs():
 
     return args.form, args.datadir
 
-def getdata(form, datadir):
+def getdata(log, form, datadir):
     datapath = pathlib.Path('data') / form / datadir
     if not datapath.is_dir():
         sys.exit(1)
 
     instances = {}
-    for perc in percpreferred:
-        percpath = datapath / str(perc)
-        if not percpath.is_dir():
+    for numitems in numsitems:
+        numitemspath = datapath / ("%2d" % numitems)
+        if not numitemspath.is_dir():
             sys.exit(1)
+        
+        instances[numitems] = {}
+        for perc in percpreferred:
+            percpath = numitemspath / ("%2d" % perc)
+            if not percpath.is_dir():
+                sys.exit(1)
 
-        instances[perc] = []
-        for instance in percpath.iterdir():
-            instances[perc] += [
-                str(instance)
-            ]
+            instances[numitems][perc] = []
+            for instance in percpath.iterdir():
+                instances[numitems][perc] += [
+                    str(instance)
+                ]
 
+    log.info('Finished retrieving data')
     return instances
 
 def parse_solve_message(msg):
@@ -66,35 +79,48 @@ def parse_solve_message(msg):
     msg = msg.split(' ' )[0]
     return int(msg)
 
-def runsolver(form, instances):
-    results = []
-    for model in models[form]:
-        model_res = []
-        for perc in percpreferred:
-            perc_res = []
-            for instance in instances[perc]:
-                ampl.reset()
-                ampl.read     (model)
-                ampl.read_data(instance)
-                time = timeit.timeit(
-                    stmt  =lambda: ampl.eval('solve > /dev/null;'),
-                    number=1
-                )
+def runsolver(log, form, instances):
+    with Progress() as pbar:
+        pbartask = pbar.add_task(
+            'Running the solver...',
+            len(models[form])*len(numsitems)*len(percpreferred)*numinstances
+        )
+        
+        results = []
+        for model in models[form]:
+            model_res = []
+            for numitems in numsitems:
+                numitems_res = []
+                for perc in percpreferred:
+                    perc_res = []
+                    for instance in instances[numitems][perc]:
+                        ampl.reset()
+                        ampl.read     (model)
+                        ampl.read_data(instance)
+                        time = timeit.timeit(
+                            stmt  =lambda: ampl.eval('solve > /dev/null;'),
+                            number=1
+                        )
+                        pbar.update(pbartask, advance=1)
 
-                nodes = parse_solve_message(ampl.get_value('solve_message'))
-                sol   =                     ampl.get_value('Gains')
+                        nodes = parse_solve_message(ampl.get_value('solve_message'))
+                        sol   =                     ampl.get_value('Gains')
 
-                instance_desc = pathlib.Path(instance)
-                instance_desc = instance_desc.stem
-                perc_res += [(instance_desc, [nodes, time, sol])]
-            model_res += [(perc, perc_res)]
-        model_desc = pathlib.Path(model)
-        model_desc = model_desc.stem
-        results += [(model_desc, model_res)]
+                        instance_desc = pathlib.Path(instance)
+                        instance_desc = instance_desc.stem
+                        perc_res += [(instance_desc, [nodes, time, sol])]
+                    numitems_res += [(perc, perc_res)]
+                model_res += [(numitems, numitems_res)]
+            model_desc = pathlib.Path(model)
+            model_desc = model_desc.stem
+            results += [(model_desc, model_res)]
+        pbar.stop_task(pbartask)
+
+    log.info('All problem instances executed')
 
     return results
 
-def printrawresults(form, datadir, results):
+def printrawresults(log, form, datadir, results):
     path  = pathlib.Path('results') / form
     if not path.is_dir():
         path.mkdir()
@@ -104,23 +130,29 @@ def printrawresults(form, datadir, results):
     with open(path / 'raw-output.csv', 'w') as fd:
         writer = csv.DictWriter(
             f         =fd,
-            fieldnames=['model', 'perc', 'instance', 'nodes', 'time', 'sol']
+            fieldnames=[
+                'model', 'numitems', 'perc', 'instance',
+                'nodes', 'time',     'sol']
         )
 
         writer.writeheader()
         for model, model_res in results:
-            for perc, perc_res in model_res:
-                for instance, (nodes, time, sol) in perc_res:
-                    writer.writerow({
-                        'model':    model,
-                        'perc':     perc,
-                        'instance': instance,
-                        'nodes':    nodes,
-                        'time':     time,
-                        'sol':      sol,
-                    })
+            for numitems, numitems_res in model_res:
+                for perc, perc_res in numitems_res:
+                    for instance, (nodes, time, sol) in perc_res:
+                        writer.writerow({
+                            'model':    model,
+                            'numitems': numitems,
+                            'perc':     perc,
+                            'instance': instance,
+                            'nodes':    nodes,
+                            'time':     time,
+                            'sol':      sol,
+                        })
 
-def printlatextables(form, datadir, results):
+    log.info('Printed raw results')
+
+def printlatextables(log, form, datadir, results):
     path = pathlib.Path('results') / form / datadir
 
     with open(path / 'tbl-efsll.tex', 'w') as fd:
@@ -128,53 +160,72 @@ def printlatextables(form, datadir, results):
             print(s, end='', file=fd)
         put('% Table for efsll\n')
         put('\n')
-        put('\\begin{tabularx}{\\textwidth}{l *{6}{Y}}\n')
+        put('\\begin{tabularx}{\\textwidth}{ll *{6}{Y}}\n')
         put('    \\toprule\n')
-        put('    $|S^k|$\n')
+        put('    $|I|$ & $|S^k|$\n')
         put('        ')
         for model, _ in results:
             put('& \\multicolumn{3}{l}{%s}' % latex_model_name[model])
         put('\\\\\n')
         put(' ' * 3)
         for idx, _ in enumerate(results):
-            put(' \\cmidrule(lr){%s-%s}' % (idx*3+2, idx*3+4))
+            put(' \\cmidrule(lr){%s-%s}' % ((idx+1)*3, (idx+1)*3+2))
         put('\n')
-        put(' ' * 4)
+        put('    &')
         for _ in enumerate(results):
             put(' & Nodes & Time (s) & Sol')
         put('\\\\\n')
         put('    \\midrule\n')
-        for idx, perc in enumerate(percpreferred):
-            put('    %d' % int(numitems*perc/100))
-            for _, model_res in results:
-                _, perc_res = model_res[idx]
-                nodes = 0
-                time  = 0
-                sol   = 0
-                for _, (n, t, _) in perc_res:
-                    nodes += n
-                    time  += t
-                    if t < TIME_LIMIT:
-                        sol += 1
-                nodes = int(nodes/len(perc_res))
-                time  =     time /len(perc_res)
+        for idx, numitems in enumerate(numsitems):
+            for pdx, perc in enumerate(percpreferred):
+                put('    %d & %d' % (
+                    numitems,
+                    math.ceil(numitems*float(perc)/100)))
+                for _, model_res in results:
+                    _, numitems_res = model_res   [idx]
+                    _, perc_res     = numitems_res[pdx]
+                    
+                    nodes = 0
+                    time  = 0
+                    sol   = 0
+                    for _, (n, t, _) in perc_res:
+                        nodes += n
+                        time  += t
+                        if t < TIME_LIMIT:
+                            sol += 1
+                    nodes = int(nodes/len(perc_res))
+                    time  =     time /len(perc_res)
 
-                put(' & %d & %.1f & %d' % (nodes, time, sol))
-            put('\\\\\n')
+                    put(' & %d & %.1f & %d' % (nodes, time, sol))
+                put('\\\\\n')
         put('    \\bottomrule\n')
         put('\\end{tabularx}\n')
+    log.info('Printed latex tables')
 
-def printplots(form, datadir, results):
+def printplots(log, form, datadir, results):
+    log.info('Printed plots')
     pass
 
+def getlogger():
+    logging.basicConfig(
+        level="NOTSET",
+        format="%(message)s",
+        datefmt="[%X]",
+        handlers=[
+            RichHandler(rich_tracebacks=True)
+        ]
+    )
+
+    return logging.getLogger("rich")
 if __name__ == '__main__':
+    log           = getlogger()
     ampl          = getampl  ()
     form, datadir = parseargs()
-    instances     = getdata  (form, datadir)
+    instances     = getdata  (log, form, datadir)
     
-    results = runsolver(form, instances)
+    results = runsolver(log, form, instances)
     print(results)
 
-    printrawresults (form, datadir, results)
-    printlatextables(form, datadir, results)
-    printplots      (form, datadir, results)
+    printrawresults (log, form, datadir, results)
+    printlatextables(log, form, datadir, results)
+    printplots      (log, form, datadir, results)
