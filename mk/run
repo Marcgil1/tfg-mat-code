@@ -177,6 +177,8 @@ def printlatextables(log, form, datadir, results):
         put('\\\\\n')
         put('    \\midrule\n')
         for idx, numitems in enumerate(numsitems):
+            if idx > 0:
+                put('    \\addlinespace\n')
             for pdx, perc in enumerate(percpreferred):
                 put('    %d & %d' % (
                     numitems,
