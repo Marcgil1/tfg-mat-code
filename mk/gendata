@@ -10,9 +10,9 @@ randomseed   = 10
 numinstances = 3
 
 numclients    =  30
-numitems      =  15
 maxnumbudgets =  10
 maxbudget     =  20
+numsitems     = [ 5, 15, 25]
 percpreferred = [10, 25, 50]
 
 
@@ -39,7 +39,7 @@ def genprices():
 
     return len(prices), prices, budgets
 
-def genprefs(perc):
+def genprefs(numitems, perc):
     PREFERED = []
     KWORSE   = []
     for kdx in range(numclients):
@@ -81,9 +81,9 @@ def gencapacities():
         ]
     return capacities
 
-def geninstance(formulation, perc):
+def geninstance(formulation, numitems, perc):
     numprices, prices, budgets = genprices()
-    PREFERED, KWORSE           = genprefs(perc)
+    PREFERED, KWORSE           = genprefs(numitems, perc)
     
     capacities = None
     if formulation == 'efsll':
@@ -119,8 +119,11 @@ def getoutdir(datadir, formulation):
 
     return outdir
 
-def getfds(outdir, perc):
-    outdir /= str(perc)
+def getfds(outdir, numitems, perc):
+    outdir /= "%2d" % numitems
+    if not outdir.exists():
+        outdir.mkdir()
+    outdir /= "%2d" % perc
     outdir.mkdir()
 
     fds = []
@@ -190,12 +193,13 @@ if __name__ == '__main__':
     formulation = read_formulation_from_args()
 
     outdir = getoutdir('data', formulation)
-    for perc in percpreferred:
-        fds = getfds(outdir, perc)
-        for fd in fds:
-            printinstance(
-                geninstance(formulation, perc),
-                get_put(fd)
-            )
-        for fd in fds:
-            fd.close()
+    for numitems in numsitems:
+        for perc in percpreferred:
+            fds = getfds(outdir, numitems, perc)
+            for fd in fds:
+                printinstance(
+                    geninstance(formulation, numitems, perc),
+                    get_put(fd)
+                )
+            for fd in fds:
+                fd.close()
