@@ -8,20 +8,30 @@ import timeit
 
 import amplpy
 
-AMPL_PATH = '/Users/marcgile/SourceProgs/ampl/ampl'
+AMPL_PATH  = '/Users/marcgile/SourceProgs/ampl/ampl'
+TIME_LIMIT = 600.0
 
 models = {
     'sll':   ['ampl/sll1.mod',   'ampl/sll2.mod'  ],
     'efsll': ['ampl/efsll1.mod', 'ampl/efsll2.mod'],
 }
 
+latex_model_name = {
+    'sll1':   '\ensuremath{\mathbf{(SLL}_1\mathbf{)}}',
+    'sll2':   '\ensuremath{\mathbf{(SLL}_2\mathbf{)}}',
+    'efsll1': '\ensuremath{\mathbf{(EF-SLL}_1\mathbf{)}}',
+    'efsll2': '\ensuremath{\mathbf{(EF-SLL}_2\mathbf{)}}',
+}
+
+numitems      =  15
 percpreferred = [10, 25, 50]
 
 def getampl():
     amplpy.add_to_path(AMPL_PATH)
     ampl = amplpy.AMPL()
-    ampl.option['solver'    ] = 'cplex'
-    ampl.option['solver_msg'] = '0'
+    ampl.option['solver'      ] = 'cplex'
+    ampl.option['solver_msg'  ] = '0'
+    ampl.option['cplex_option'] = 'timelimit=%.1f' % TIME_LIMIT
     return ampl
 
 def parseargs():
@@ -111,7 +121,48 @@ def printrawresults(form, datadir, results):
                     })
 
 def printlatextables(form, datadir, results):
-    pass
+    path = pathlib.Path('results') / form / datadir
+
+    with open(path / 'tbl-efsll.tex', 'w') as fd:
+        def put(s):
+            print(s, end='', file=fd)
+        put('% Table for efsll\n')
+        put('\n')
+        put('\\begin{tabularx}{\\textwidth}{l *{6}{Y}}\n')
+        put('    \\toprule\n')
+        put('    $|S^k|$\n')
+        put('        ')
+        for model, _ in results:
+            put('& \\multicolumn{3}{l}{%s}' % latex_model_name[model])
+        put('\\\\\n')
+        put(' ' * 3)
+        for idx, _ in enumerate(results):
+            put(' \\cmidrule(lr){%s-%s}' % (idx*3+2, idx*3+4))
+        put('\n')
+        put(' ' * 4)
+        for _ in enumerate(results):
+            put(' & Nodes & Time (s) & Sol')
+        put('\\\\\n')
+        put('    \\midrule\n')
+        for idx, perc in enumerate(percpreferred):
+            put('    %d' % int(numitems*perc/100))
+            for _, model_res in results:
+                _, perc_res = model_res[idx]
+                nodes = 0
+                time  = 0
+                sol   = 0
+                for _, (n, t, _) in perc_res:
+                    nodes += n
+                    time  += t
+                    if t < TIME_LIMIT:
+                        sol += 1
+                nodes = int(nodes/len(perc_res))
+                time  =     time /len(perc_res)
+
+                put(' & %d & %.1f & %d' % (nodes, time, sol))
+            put('\\\\\n')
+        put('    \\bottomrule\n')
+        put('\\end{tabularx}\n')
 
 def printplots(form, datadir, results):
     pass
