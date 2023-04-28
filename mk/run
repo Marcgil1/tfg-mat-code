@@ -201,7 +201,7 @@ def printlatexbody(put, results):
                 put(' & %d & %.1f & %d' % (nodes, time, sol))
             put('\\\\\n')
 
-def printlatexbotom(put, results):
+def printlatexbottom(put, results):
     put('    \\bottomrule\n')
     put('\\end{tabularx}\n')
 
@@ -218,7 +218,6 @@ def printlatextables(log, form, datadir, results):
 
 def printplots(log, form, datadir, results):
     log.info('Printed plots')
-    pass
 
 def getlogger():
     logging.basicConfig(
