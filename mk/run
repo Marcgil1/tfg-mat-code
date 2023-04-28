@@ -9,6 +9,8 @@ import sys
 import timeit
 
 import amplpy
+import numpy             as np
+import matplotlib.pyplot as plt
 
 from rich.logging  import RichHandler
 from rich.progress import Progress
@@ -152,56 +154,66 @@ def printrawresults(log, form, datadir, results):
 
     log.info('Printed raw results')
 
+
+def printlatexheading(put, results):
+    put('% Table for efsll\n')
+    put('\n')
+    put('\\begin{tabularx}{\\textwidth}{ll *{6}{Y}}\n')
+    put('    \\toprule\n')
+    put('    $|I|$ & $|S^k|$\n')
+    put('        ')
+    for model, _ in results:
+        put('& \\multicolumn{3}{l}{%s}' % latex_model_name[model])
+    put('\\\\\n')
+    put(' ' * 3)
+    for idx, _ in enumerate(results):
+        put(' \\cmidrule(lr){%s-%s}' % ((idx+1)*3, (idx+1)*3+2))
+    put('\n')
+    put('    &')
+    for _ in enumerate(results):
+        put(' & Nodes & Time (s) & Sol')
+    put('\\\\\n')
+    put('    \\midrule\n')
+
+def printlatexbody(put, results):
+    for idx, numitems in enumerate(numsitems):
+        if idx > 0:
+            put('    \\addlinespace\n')
+        for pdx, perc in enumerate(percpreferred):
+            put('    %d & %d' % (
+                numitems,
+                math.ceil(numitems*float(perc)/100)))
+            for _, model_res in results:
+                _, numitems_res = model_res   [idx]
+                _, perc_res     = numitems_res[pdx]
+                
+                nodes = 0
+                time  = 0
+                sol   = 0
+                for _, (n, t, _) in perc_res:
+                    nodes += n
+                    time  += t
+                    if t < TIME_LIMIT:
+                        sol += 1
+                nodes = int(nodes/len(perc_res))
+                time  =     time /len(perc_res)
+
+                put(' & %d & %.1f & %d' % (nodes, time, sol))
+            put('\\\\\n')
+
+def printlatexbotom(put, results):
+    put('    \\bottomrule\n')
+    put('\\end{tabularx}\n')
+
 def printlatextables(log, form, datadir, results):
     path = pathlib.Path('results') / form / datadir
 
     with open(path / 'tbl-efsll.tex', 'w') as fd:
         def put(s):
             print(s, end='', file=fd)
-        put('% Table for efsll\n')
-        put('\n')
-        put('\\begin{tabularx}{\\textwidth}{ll *{6}{Y}}\n')
-        put('    \\toprule\n')
-        put('    $|I|$ & $|S^k|$\n')
-        put('        ')
-        for model, _ in results:
-            put('& \\multicolumn{3}{l}{%s}' % latex_model_name[model])
-        put('\\\\\n')
-        put(' ' * 3)
-        for idx, _ in enumerate(results):
-            put(' \\cmidrule(lr){%s-%s}' % ((idx+1)*3, (idx+1)*3+2))
-        put('\n')
-        put('    &')
-        for _ in enumerate(results):
-            put(' & Nodes & Time (s) & Sol')
-        put('\\\\\n')
-        put('    \\midrule\n')
-        for idx, numitems in enumerate(numsitems):
-            if idx > 0:
-                put('    \\addlinespace\n')
-            for pdx, perc in enumerate(percpreferred):
-                put('    %d & %d' % (
-                    numitems,
-                    math.ceil(numitems*float(perc)/100)))
-                for _, model_res in results:
-                    _, numitems_res = model_res   [idx]
-                    _, perc_res     = numitems_res[pdx]
-                    
-                    nodes = 0
-                    time  = 0
-                    sol   = 0
-                    for _, (n, t, _) in perc_res:
-                        nodes += n
-                        time  += t
-                        if t < TIME_LIMIT:
-                            sol += 1
-                    nodes = int(nodes/len(perc_res))
-                    time  =     time /len(perc_res)
-
-                    put(' & %d & %.1f & %d' % (nodes, time, sol))
-                put('\\\\\n')
-        put('    \\bottomrule\n')
-        put('\\end{tabularx}\n')
+        printlatexheading(put, results)
+        printlatexbody   (put, results)
+        printlatexbottom (put, results)
     log.info('Printed latex tables')
 
 def printplots(log, form, datadir, results):
