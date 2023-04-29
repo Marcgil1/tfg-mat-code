@@ -1,0 +1,895 @@
+param numclients := 50;
+param numitems   := 15;
+param numprices  := 18;
+
+set PREFERED[1] := 2 4 7 11;
+set PREFERED[2] := 7 9 10 11;
+set PREFERED[3] := 6 8 11 12;
+set PREFERED[4] := 1 5 6 8;
+set PREFERED[5] := 2 5 7 15;
+set PREFERED[6] := 4 8 10 14;
+set PREFERED[7] := 1 3 6 14;
+set PREFERED[8] := 1 4 5 10;
+set PREFERED[9] := 6 8 13 15;
+set PREFERED[10] := 2 5 7 11;
+set PREFERED[11] := 1 5 6 8;
+set PREFERED[12] := 5 6 12 14;
+set PREFERED[13] := 1 6 7 15;
+set PREFERED[14] := 1 8 10 13;
+set PREFERED[15] := 3 5 11 13;
+set PREFERED[16] := 1 5 7 11;
+set PREFERED[17] := 1 5 9 12;
+set PREFERED[18] := 2 8 9 10;
+set PREFERED[19] := 6 7 10 13;
+set PREFERED[20] := 5 6 7 14;
+set PREFERED[21] := 1 2 7 12;
+set PREFERED[22] := 8 9 12 14;
+set PREFERED[23] := 3 4 12 14;
+set PREFERED[24] := 3 8 12 14;
+set PREFERED[25] := 4 6 8 10;
+set PREFERED[26] := 2 6 13 15;
+set PREFERED[27] := 1 2 9 11;
+set PREFERED[28] := 4 5 8 11;
+set PREFERED[29] := 2 7 8 10;
+set PREFERED[30] := 3 7 11 15;
+set PREFERED[31] := 3 5 6 8;
+set PREFERED[32] := 5 6 10 13;
+set PREFERED[33] := 2 3 10 14;
+set PREFERED[34] := 5 7 9 13;
+set PREFERED[35] := 2 6 10 12;
+set PREFERED[36] := 3 4 8 11;
+set PREFERED[37] := 1 8 9 10;
+set PREFERED[38] := 1 9 12 13;
+set PREFERED[39] := 3 11 12 15;
+set PREFERED[40] := 5 6 12 14;
+set PREFERED[41] := 1 7 8 13;
+set PREFERED[42] := 3 5 7 11;
+set PREFERED[43] := 1 3 5 6;
+set PREFERED[44] := 1 2 13 14;
+set PREFERED[45] := 6 10 11 15;
+set PREFERED[46] := 3 5 11 12;
+set PREFERED[47] := 1 6 13 15;
+set PREFERED[48] := 2 6 7 12;
+set PREFERED[49] := 7 10 13 14;
+set PREFERED[50] := 9 12 14 15;
+
+set KWORSE[1,1] :=;
+set KWORSE[1,2] :=;
+set KWORSE[1,3] :=;
+set KWORSE[1,4] := 2;
+set KWORSE[1,5] :=;
+set KWORSE[1,6] :=;
+set KWORSE[1,7] := 2 4;
+set KWORSE[1,8] :=;
+set KWORSE[1,9] :=;
+set KWORSE[1,10] :=;
+set KWORSE[1,11] := 2 4 7;
+set KWORSE[1,12] :=;
+set KWORSE[1,13] :=;
+set KWORSE[1,14] :=;
+set KWORSE[1,15] :=;
+set KWORSE[2,1] :=;
+set KWORSE[2,2] :=;
+set KWORSE[2,3] :=;
+set KWORSE[2,4] :=;
+set KWORSE[2,5] :=;
+set KWORSE[2,6] :=;
+set KWORSE[2,7] :=;
+set KWORSE[2,8] :=;
+set KWORSE[2,9] := 7;
+set KWORSE[2,10] := 7 9;
+set KWORSE[2,11] := 7 9 10;
+set KWORSE[2,12] :=;
+set KWORSE[2,13] :=;
+set KWORSE[2,14] :=;
+set KWORSE[2,15] :=;
+set KWORSE[3,1] :=;
+set KWORSE[3,2] :=;
+set KWORSE[3,3] :=;
+set KWORSE[3,4] :=;
+set KWORSE[3,5] :=;
+set KWORSE[3,6] :=;
+set KWORSE[3,7] :=;
+set KWORSE[3,8] := 6;
+set KWORSE[3,9] :=;
+set KWORSE[3,10] :=;
+set KWORSE[3,11] := 6 8;
+set KWORSE[3,12] := 6 8 11;
+set KWORSE[3,13] :=;
+set KWORSE[3,14] :=;
+set KWORSE[3,15] :=;
+set KWORSE[4,1] :=;
+set KWORSE[4,2] :=;
+set KWORSE[4,3] :=;
+set KWORSE[4,4] :=;
+set KWORSE[4,5] := 1;
+set KWORSE[4,6] := 1 5;
+set KWORSE[4,7] :=;
+set KWORSE[4,8] := 1 5 6;
+set KWORSE[4,9] :=;
+set KWORSE[4,10] :=;
+set KWORSE[4,11] :=;
+set KWORSE[4,12] :=;
+set KWORSE[4,13] :=;
+set KWORSE[4,14] :=;
+set KWORSE[4,15] :=;
+set KWORSE[5,1] :=;
+set KWORSE[5,2] :=;
+set KWORSE[5,3] :=;
+set KWORSE[5,4] :=;
+set KWORSE[5,5] := 2;
+set KWORSE[5,6] :=;
+set KWORSE[5,7] := 2 5;
+set KWORSE[5,8] :=;
+set KWORSE[5,9] :=;
+set KWORSE[5,10] :=;
+set KWORSE[5,11] :=;
+set KWORSE[5,12] :=;
+set KWORSE[5,13] :=;
+set KWORSE[5,14] :=;
+set KWORSE[5,15] := 2 5 7;
+set KWORSE[6,1] :=;
+set KWORSE[6,2] :=;
+set KWORSE[6,3] :=;
+set KWORSE[6,4] :=;
+set KWORSE[6,5] :=;
+set KWORSE[6,6] :=;
+set KWORSE[6,7] :=;
+set KWORSE[6,8] := 4;
+set KWORSE[6,9] :=;
+set KWORSE[6,10] := 4 8;
+set KWORSE[6,11] :=;
+set KWORSE[6,12] :=;
+set KWORSE[6,13] :=;
+set KWORSE[6,14] := 4 8 10;
+set KWORSE[6,15] :=;
+set KWORSE[7,1] :=;
+set KWORSE[7,2] :=;
+set KWORSE[7,3] := 1;
+set KWORSE[7,4] :=;
+set KWORSE[7,5] :=;
+set KWORSE[7,6] := 1 3;
+set KWORSE[7,7] :=;
+set KWORSE[7,8] :=;
+set KWORSE[7,9] :=;
+set KWORSE[7,10] :=;
+set KWORSE[7,11] :=;
+set KWORSE[7,12] :=;
+set KWORSE[7,13] :=;
+set KWORSE[7,14] := 1 3 6;
+set KWORSE[7,15] :=;
+set KWORSE[8,1] :=;
+set KWORSE[8,2] :=;
+set KWORSE[8,3] :=;
+set KWORSE[8,4] := 1;
+set KWORSE[8,5] := 1 4;
+set KWORSE[8,6] :=;
+set KWORSE[8,7] :=;
+set KWORSE[8,8] :=;
+set KWORSE[8,9] :=;
+set KWORSE[8,10] := 1 4 5;
+set KWORSE[8,11] :=;
+set KWORSE[8,12] :=;
+set KWORSE[8,13] :=;
+set KWORSE[8,14] :=;
+set KWORSE[8,15] :=;
+set KWORSE[9,1] :=;
+set KWORSE[9,2] :=;
+set KWORSE[9,3] :=;
+set KWORSE[9,4] :=;
+set KWORSE[9,5] :=;
+set KWORSE[9,6] :=;
+set KWORSE[9,7] :=;
+set KWORSE[9,8] := 6;
+set KWORSE[9,9] :=;
+set KWORSE[9,10] :=;
+set KWORSE[9,11] :=;
+set KWORSE[9,12] :=;
+set KWORSE[9,13] := 6 8;
+set KWORSE[9,14] :=;
+set KWORSE[9,15] := 6 8 13;
+set KWORSE[10,1] :=;
+set KWORSE[10,2] :=;
+set KWORSE[10,3] :=;
+set KWORSE[10,4] :=;
+set KWORSE[10,5] := 2;
+set KWORSE[10,6] :=;
+set KWORSE[10,7] := 2 5;
+set KWORSE[10,8] :=;
+set KWORSE[10,9] :=;
+set KWORSE[10,10] :=;
+set KWORSE[10,11] := 2 5 7;
+set KWORSE[10,12] :=;
+set KWORSE[10,13] :=;
+set KWORSE[10,14] :=;
+set KWORSE[10,15] :=;
+set KWORSE[11,1] :=;
+set KWORSE[11,2] :=;
+set KWORSE[11,3] :=;
+set KWORSE[11,4] :=;
+set KWORSE[11,5] := 1;
+set KWORSE[11,6] := 1 5;
+set KWORSE[11,7] :=;
+set KWORSE[11,8] := 1 5 6;
+set KWORSE[11,9] :=;
+set KWORSE[11,10] :=;
+set KWORSE[11,11] :=;
+set KWORSE[11,12] :=;
+set KWORSE[11,13] :=;
+set KWORSE[11,14] :=;
+set KWORSE[11,15] :=;
+set KWORSE[12,1] :=;
+set KWORSE[12,2] :=;
+set KWORSE[12,3] :=;
+set KWORSE[12,4] :=;
+set KWORSE[12,5] :=;
+set KWORSE[12,6] := 5;
+set KWORSE[12,7] :=;
+set KWORSE[12,8] :=;
+set KWORSE[12,9] :=;
+set KWORSE[12,10] :=;
+set KWORSE[12,11] :=;
+set KWORSE[12,12] := 5 6;
+set KWORSE[12,13] :=;
+set KWORSE[12,14] := 5 6 12;
+set KWORSE[12,15] :=;
+set KWORSE[13,1] :=;
+set KWORSE[13,2] :=;
+set KWORSE[13,3] :=;
+set KWORSE[13,4] :=;
+set KWORSE[13,5] :=;
+set KWORSE[13,6] := 1;
+set KWORSE[13,7] := 1 6;
+set KWORSE[13,8] :=;
+set KWORSE[13,9] :=;
+set KWORSE[13,10] :=;
+set KWORSE[13,11] :=;
+set KWORSE[13,12] :=;
+set KWORSE[13,13] :=;
+set KWORSE[13,14] :=;
+set KWORSE[13,15] := 1 6 7;
+set KWORSE[14,1] :=;
+set KWORSE[14,2] :=;
+set KWORSE[14,3] :=;
+set KWORSE[14,4] :=;
+set KWORSE[14,5] :=;
+set KWORSE[14,6] :=;
+set KWORSE[14,7] :=;
+set KWORSE[14,8] := 1;
+set KWORSE[14,9] :=;
+set KWORSE[14,10] := 1 8;
+set KWORSE[14,11] :=;
+set KWORSE[14,12] :=;
+set KWORSE[14,13] := 1 8 10;
+set KWORSE[14,14] :=;
+set KWORSE[14,15] :=;
+set KWORSE[15,1] :=;
+set KWORSE[15,2] :=;
+set KWORSE[15,3] :=;
+set KWORSE[15,4] :=;
+set KWORSE[15,5] := 3;
+set KWORSE[15,6] :=;
+set KWORSE[15,7] :=;
+set KWORSE[15,8] :=;
+set KWORSE[15,9] :=;
+set KWORSE[15,10] :=;
+set KWORSE[15,11] := 3 5;
+set KWORSE[15,12] :=;
+set KWORSE[15,13] := 3 5 11;
+set KWORSE[15,14] :=;
+set KWORSE[15,15] :=;
+set KWORSE[16,1] :=;
+set KWORSE[16,2] :=;
+set KWORSE[16,3] :=;
+set KWORSE[16,4] :=;
+set KWORSE[16,5] := 1;
+set KWORSE[16,6] :=;
+set KWORSE[16,7] := 1 5;
+set KWORSE[16,8] :=;
+set KWORSE[16,9] :=;
+set KWORSE[16,10] :=;
+set KWORSE[16,11] := 1 5 7;
+set KWORSE[16,12] :=;
+set KWORSE[16,13] :=;
+set KWORSE[16,14] :=;
+set KWORSE[16,15] :=;
+set KWORSE[17,1] :=;
+set KWORSE[17,2] :=;
+set KWORSE[17,3] :=;
+set KWORSE[17,4] :=;
+set KWORSE[17,5] := 1;
+set KWORSE[17,6] :=;
+set KWORSE[17,7] :=;
+set KWORSE[17,8] :=;
+set KWORSE[17,9] := 1 5;
+set KWORSE[17,10] :=;
+set KWORSE[17,11] :=;
+set KWORSE[17,12] := 1 5 9;
+set KWORSE[17,13] :=;
+set KWORSE[17,14] :=;
+set KWORSE[17,15] :=;
+set KWORSE[18,1] :=;
+set KWORSE[18,2] :=;
+set KWORSE[18,3] :=;
+set KWORSE[18,4] :=;
+set KWORSE[18,5] :=;
+set KWORSE[18,6] :=;
+set KWORSE[18,7] :=;
+set KWORSE[18,8] := 2;
+set KWORSE[18,9] := 2 8;
+set KWORSE[18,10] := 2 8 9;
+set KWORSE[18,11] :=;
+set KWORSE[18,12] :=;
+set KWORSE[18,13] :=;
+set KWORSE[18,14] :=;
+set KWORSE[18,15] :=;
+set KWORSE[19,1] :=;
+set KWORSE[19,2] :=;
+set KWORSE[19,3] :=;
+set KWORSE[19,4] :=;
+set KWORSE[19,5] :=;
+set KWORSE[19,6] :=;
+set KWORSE[19,7] := 6;
+set KWORSE[19,8] :=;
+set KWORSE[19,9] :=;
+set KWORSE[19,10] := 6 7;
+set KWORSE[19,11] :=;
+set KWORSE[19,12] :=;
+set KWORSE[19,13] := 6 7 10;
+set KWORSE[19,14] :=;
+set KWORSE[19,15] :=;
+set KWORSE[20,1] :=;
+set KWORSE[20,2] :=;
+set KWORSE[20,3] :=;
+set KWORSE[20,4] :=;
+set KWORSE[20,5] :=;
+set KWORSE[20,6] := 5;
+set KWORSE[20,7] := 5 6;
+set KWORSE[20,8] :=;
+set KWORSE[20,9] :=;
+set KWORSE[20,10] :=;
+set KWORSE[20,11] :=;
+set KWORSE[20,12] :=;
+set KWORSE[20,13] :=;
+set KWORSE[20,14] := 5 6 7;
+set KWORSE[20,15] :=;
+set KWORSE[21,1] :=;
+set KWORSE[21,2] := 1;
+set KWORSE[21,3] :=;
+set KWORSE[21,4] :=;
+set KWORSE[21,5] :=;
+set KWORSE[21,6] :=;
+set KWORSE[21,7] := 1 2;
+set KWORSE[21,8] :=;
+set KWORSE[21,9] :=;
+set KWORSE[21,10] :=;
+set KWORSE[21,11] :=;
+set KWORSE[21,12] := 1 2 7;
+set KWORSE[21,13] :=;
+set KWORSE[21,14] :=;
+set KWORSE[21,15] :=;
+set KWORSE[22,1] :=;
+set KWORSE[22,2] :=;
+set KWORSE[22,3] :=;
+set KWORSE[22,4] :=;
+set KWORSE[22,5] :=;
+set KWORSE[22,6] :=;
+set KWORSE[22,7] :=;
+set KWORSE[22,8] :=;
+set KWORSE[22,9] := 8;
+set KWORSE[22,10] :=;
+set KWORSE[22,11] :=;
+set KWORSE[22,12] := 8 9;
+set KWORSE[22,13] :=;
+set KWORSE[22,14] := 8 9 12;
+set KWORSE[22,15] :=;
+set KWORSE[23,1] :=;
+set KWORSE[23,2] :=;
+set KWORSE[23,3] :=;
+set KWORSE[23,4] := 3;
+set KWORSE[23,5] :=;
+set KWORSE[23,6] :=;
+set KWORSE[23,7] :=;
+set KWORSE[23,8] :=;
+set KWORSE[23,9] :=;
+set KWORSE[23,10] :=;
+set KWORSE[23,11] :=;
+set KWORSE[23,12] := 3 4;
+set KWORSE[23,13] :=;
+set KWORSE[23,14] := 3 4 12;
+set KWORSE[23,15] :=;
+set KWORSE[24,1] :=;
+set KWORSE[24,2] :=;
+set KWORSE[24,3] :=;
+set KWORSE[24,4] :=;
+set KWORSE[24,5] :=;
+set KWORSE[24,6] :=;
+set KWORSE[24,7] :=;
+set KWORSE[24,8] := 3;
+set KWORSE[24,9] :=;
+set KWORSE[24,10] :=;
+set KWORSE[24,11] :=;
+set KWORSE[24,12] := 3 8;
+set KWORSE[24,13] :=;
+set KWORSE[24,14] := 3 8 12;
+set KWORSE[24,15] :=;
+set KWORSE[25,1] :=;
+set KWORSE[25,2] :=;
+set KWORSE[25,3] :=;
+set KWORSE[25,4] :=;
+set KWORSE[25,5] :=;
+set KWORSE[25,6] := 4;
+set KWORSE[25,7] :=;
+set KWORSE[25,8] := 4 6;
+set KWORSE[25,9] :=;
+set KWORSE[25,10] := 4 6 8;
+set KWORSE[25,11] :=;
+set KWORSE[25,12] :=;
+set KWORSE[25,13] :=;
+set KWORSE[25,14] :=;
+set KWORSE[25,15] :=;
+set KWORSE[26,1] :=;
+set KWORSE[26,2] :=;
+set KWORSE[26,3] :=;
+set KWORSE[26,4] :=;
+set KWORSE[26,5] :=;
+set KWORSE[26,6] := 2;
+set KWORSE[26,7] :=;
+set KWORSE[26,8] :=;
+set KWORSE[26,9] :=;
+set KWORSE[26,10] :=;
+set KWORSE[26,11] :=;
+set KWORSE[26,12] :=;
+set KWORSE[26,13] := 2 6;
+set KWORSE[26,14] :=;
+set KWORSE[26,15] := 2 6 13;
+set KWORSE[27,1] :=;
+set KWORSE[27,2] := 1;
+set KWORSE[27,3] :=;
+set KWORSE[27,4] :=;
+set KWORSE[27,5] :=;
+set KWORSE[27,6] :=;
+set KWORSE[27,7] :=;
+set KWORSE[27,8] :=;
+set KWORSE[27,9] := 1 2;
+set KWORSE[27,10] :=;
+set KWORSE[27,11] := 1 2 9;
+set KWORSE[27,12] :=;
+set KWORSE[27,13] :=;
+set KWORSE[27,14] :=;
+set KWORSE[27,15] :=;
+set KWORSE[28,1] :=;
+set KWORSE[28,2] :=;
+set KWORSE[28,3] :=;
+set KWORSE[28,4] :=;
+set KWORSE[28,5] := 4;
+set KWORSE[28,6] :=;
+set KWORSE[28,7] :=;
+set KWORSE[28,8] := 4 5;
+set KWORSE[28,9] :=;
+set KWORSE[28,10] :=;
+set KWORSE[28,11] := 4 5 8;
+set KWORSE[28,12] :=;
+set KWORSE[28,13] :=;
+set KWORSE[28,14] :=;
+set KWORSE[28,15] :=;
+set KWORSE[29,1] :=;
+set KWORSE[29,2] :=;
+set KWORSE[29,3] :=;
+set KWORSE[29,4] :=;
+set KWORSE[29,5] :=;
+set KWORSE[29,6] :=;
+set KWORSE[29,7] := 2;
+set KWORSE[29,8] := 2 7;
+set KWORSE[29,9] :=;
+set KWORSE[29,10] := 2 7 8;
+set KWORSE[29,11] :=;
+set KWORSE[29,12] :=;
+set KWORSE[29,13] :=;
+set KWORSE[29,14] :=;
+set KWORSE[29,15] :=;
+set KWORSE[30,1] :=;
+set KWORSE[30,2] :=;
+set KWORSE[30,3] :=;
+set KWORSE[30,4] :=;
+set KWORSE[30,5] :=;
+set KWORSE[30,6] :=;
+set KWORSE[30,7] := 3;
+set KWORSE[30,8] :=;
+set KWORSE[30,9] :=;
+set KWORSE[30,10] :=;
+set KWORSE[30,11] := 3 7;
+set KWORSE[30,12] :=;
+set KWORSE[30,13] :=;
+set KWORSE[30,14] :=;
+set KWORSE[30,15] := 3 7 11;
+set KWORSE[31,1] :=;
+set KWORSE[31,2] :=;
+set KWORSE[31,3] :=;
+set KWORSE[31,4] :=;
+set KWORSE[31,5] := 3;
+set KWORSE[31,6] := 3 5;
+set KWORSE[31,7] :=;
+set KWORSE[31,8] := 3 5 6;
+set KWORSE[31,9] :=;
+set KWORSE[31,10] :=;
+set KWORSE[31,11] :=;
+set KWORSE[31,12] :=;
+set KWORSE[31,13] :=;
+set KWORSE[31,14] :=;
+set KWORSE[31,15] :=;
+set KWORSE[32,1] :=;
+set KWORSE[32,2] :=;
+set KWORSE[32,3] :=;
+set KWORSE[32,4] :=;
+set KWORSE[32,5] :=;
+set KWORSE[32,6] := 5;
+set KWORSE[32,7] :=;
+set KWORSE[32,8] :=;
+set KWORSE[32,9] :=;
+set KWORSE[32,10] := 5 6;
+set KWORSE[32,11] :=;
+set KWORSE[32,12] :=;
+set KWORSE[32,13] := 5 6 10;
+set KWORSE[32,14] :=;
+set KWORSE[32,15] :=;
+set KWORSE[33,1] :=;
+set KWORSE[33,2] :=;
+set KWORSE[33,3] := 2;
+set KWORSE[33,4] :=;
+set KWORSE[33,5] :=;
+set KWORSE[33,6] :=;
+set KWORSE[33,7] :=;
+set KWORSE[33,8] :=;
+set KWORSE[33,9] :=;
+set KWORSE[33,10] := 2 3;
+set KWORSE[33,11] :=;
+set KWORSE[33,12] :=;
+set KWORSE[33,13] :=;
+set KWORSE[33,14] := 2 3 10;
+set KWORSE[33,15] :=;
+set KWORSE[34,1] :=;
+set KWORSE[34,2] :=;
+set KWORSE[34,3] :=;
+set KWORSE[34,4] :=;
+set KWORSE[34,5] :=;
+set KWORSE[34,6] :=;
+set KWORSE[34,7] := 5;
+set KWORSE[34,8] :=;
+set KWORSE[34,9] := 5 7;
+set KWORSE[34,10] :=;
+set KWORSE[34,11] :=;
+set KWORSE[34,12] :=;
+set KWORSE[34,13] := 5 7 9;
+set KWORSE[34,14] :=;
+set KWORSE[34,15] :=;
+set KWORSE[35,1] :=;
+set KWORSE[35,2] :=;
+set KWORSE[35,3] :=;
+set KWORSE[35,4] :=;
+set KWORSE[35,5] :=;
+set KWORSE[35,6] := 2;
+set KWORSE[35,7] :=;
+set KWORSE[35,8] :=;
+set KWORSE[35,9] :=;
+set KWORSE[35,10] := 2 6;
+set KWORSE[35,11] :=;
+set KWORSE[35,12] := 2 6 10;
+set KWORSE[35,13] :=;
+set KWORSE[35,14] :=;
+set KWORSE[35,15] :=;
+set KWORSE[36,1] :=;
+set KWORSE[36,2] :=;
+set KWORSE[36,3] :=;
+set KWORSE[36,4] := 3;
+set KWORSE[36,5] :=;
+set KWORSE[36,6] :=;
+set KWORSE[36,7] :=;
+set KWORSE[36,8] := 3 4;
+set KWORSE[36,9] :=;
+set KWORSE[36,10] :=;
+set KWORSE[36,11] := 3 4 8;
+set KWORSE[36,12] :=;
+set KWORSE[36,13] :=;
+set KWORSE[36,14] :=;
+set KWORSE[36,15] :=;
+set KWORSE[37,1] :=;
+set KWORSE[37,2] :=;
+set KWORSE[37,3] :=;
+set KWORSE[37,4] :=;
+set KWORSE[37,5] :=;
+set KWORSE[37,6] :=;
+set KWORSE[37,7] :=;
+set KWORSE[37,8] := 1;
+set KWORSE[37,9] := 1 8;
+set KWORSE[37,10] := 1 8 9;
+set KWORSE[37,11] :=;
+set KWORSE[37,12] :=;
+set KWORSE[37,13] :=;
+set KWORSE[37,14] :=;
+set KWORSE[37,15] :=;
+set KWORSE[38,1] :=;
+set KWORSE[38,2] :=;
+set KWORSE[38,3] :=;
+set KWORSE[38,4] :=;
+set KWORSE[38,5] :=;
+set KWORSE[38,6] :=;
+set KWORSE[38,7] :=;
+set KWORSE[38,8] :=;
+set KWORSE[38,9] := 1;
+set KWORSE[38,10] :=;
+set KWORSE[38,11] :=;
+set KWORSE[38,12] := 1 9;
+set KWORSE[38,13] := 1 9 12;
+set KWORSE[38,14] :=;
+set KWORSE[38,15] :=;
+set KWORSE[39,1] :=;
+set KWORSE[39,2] :=;
+set KWORSE[39,3] :=;
+set KWORSE[39,4] :=;
+set KWORSE[39,5] :=;
+set KWORSE[39,6] :=;
+set KWORSE[39,7] :=;
+set KWORSE[39,8] :=;
+set KWORSE[39,9] :=;
+set KWORSE[39,10] :=;
+set KWORSE[39,11] := 3;
+set KWORSE[39,12] := 3 11;
+set KWORSE[39,13] :=;
+set KWORSE[39,14] :=;
+set KWORSE[39,15] := 3 11 12;
+set KWORSE[40,1] :=;
+set KWORSE[40,2] :=;
+set KWORSE[40,3] :=;
+set KWORSE[40,4] :=;
+set KWORSE[40,5] :=;
+set KWORSE[40,6] := 5;
+set KWORSE[40,7] :=;
+set KWORSE[40,8] :=;
+set KWORSE[40,9] :=;
+set KWORSE[40,10] :=;
+set KWORSE[40,11] :=;
+set KWORSE[40,12] := 5 6;
+set KWORSE[40,13] :=;
+set KWORSE[40,14] := 5 6 12;
+set KWORSE[40,15] :=;
+set KWORSE[41,1] :=;
+set KWORSE[41,2] :=;
+set KWORSE[41,3] :=;
+set KWORSE[41,4] :=;
+set KWORSE[41,5] :=;
+set KWORSE[41,6] :=;
+set KWORSE[41,7] := 1;
+set KWORSE[41,8] := 1 7;
+set KWORSE[41,9] :=;
+set KWORSE[41,10] :=;
+set KWORSE[41,11] :=;
+set KWORSE[41,12] :=;
+set KWORSE[41,13] := 1 7 8;
+set KWORSE[41,14] :=;
+set KWORSE[41,15] :=;
+set KWORSE[42,1] :=;
+set KWORSE[42,2] :=;
+set KWORSE[42,3] :=;
+set KWORSE[42,4] :=;
+set KWORSE[42,5] := 3;
+set KWORSE[42,6] :=;
+set KWORSE[42,7] := 3 5;
+set KWORSE[42,8] :=;
+set KWORSE[42,9] :=;
+set KWORSE[42,10] :=;
+set KWORSE[42,11] := 3 5 7;
+set KWORSE[42,12] :=;
+set KWORSE[42,13] :=;
+set KWORSE[42,14] :=;
+set KWORSE[42,15] :=;
+set KWORSE[43,1] :=;
+set KWORSE[43,2] :=;
+set KWORSE[43,3] := 1;
+set KWORSE[43,4] :=;
+set KWORSE[43,5] := 1 3;
+set KWORSE[43,6] := 1 3 5;
+set KWORSE[43,7] :=;
+set KWORSE[43,8] :=;
+set KWORSE[43,9] :=;
+set KWORSE[43,10] :=;
+set KWORSE[43,11] :=;
+set KWORSE[43,12] :=;
+set KWORSE[43,13] :=;
+set KWORSE[43,14] :=;
+set KWORSE[43,15] :=;
+set KWORSE[44,1] :=;
+set KWORSE[44,2] := 1;
+set KWORSE[44,3] :=;
+set KWORSE[44,4] :=;
+set KWORSE[44,5] :=;
+set KWORSE[44,6] :=;
+set KWORSE[44,7] :=;
+set KWORSE[44,8] :=;
+set KWORSE[44,9] :=;
+set KWORSE[44,10] :=;
+set KWORSE[44,11] :=;
+set KWORSE[44,12] :=;
+set KWORSE[44,13] := 1 2;
+set KWORSE[44,14] := 1 2 13;
+set KWORSE[44,15] :=;
+set KWORSE[45,1] :=;
+set KWORSE[45,2] :=;
+set KWORSE[45,3] :=;
+set KWORSE[45,4] :=;
+set KWORSE[45,5] :=;
+set KWORSE[45,6] :=;
+set KWORSE[45,7] :=;
+set KWORSE[45,8] :=;
+set KWORSE[45,9] :=;
+set KWORSE[45,10] := 6;
+set KWORSE[45,11] := 6 10;
+set KWORSE[45,12] :=;
+set KWORSE[45,13] :=;
+set KWORSE[45,14] :=;
+set KWORSE[45,15] := 6 10 11;
+set KWORSE[46,1] :=;
+set KWORSE[46,2] :=;
+set KWORSE[46,3] :=;
+set KWORSE[46,4] :=;
+set KWORSE[46,5] := 3;
+set KWORSE[46,6] :=;
+set KWORSE[46,7] :=;
+set KWORSE[46,8] :=;
+set KWORSE[46,9] :=;
+set KWORSE[46,10] :=;
+set KWORSE[46,11] := 3 5;
+set KWORSE[46,12] := 3 5 11;
+set KWORSE[46,13] :=;
+set KWORSE[46,14] :=;
+set KWORSE[46,15] :=;
+set KWORSE[47,1] :=;
+set KWORSE[47,2] :=;
+set KWORSE[47,3] :=;
+set KWORSE[47,4] :=;
+set KWORSE[47,5] :=;
+set KWORSE[47,6] := 1;
+set KWORSE[47,7] :=;
+set KWORSE[47,8] :=;
+set KWORSE[47,9] :=;
+set KWORSE[47,10] :=;
+set KWORSE[47,11] :=;
+set KWORSE[47,12] :=;
+set KWORSE[47,13] := 1 6;
+set KWORSE[47,14] :=;
+set KWORSE[47,15] := 1 6 13;
+set KWORSE[48,1] :=;
+set KWORSE[48,2] :=;
+set KWORSE[48,3] :=;
+set KWORSE[48,4] :=;
+set KWORSE[48,5] :=;
+set KWORSE[48,6] := 2;
+set KWORSE[48,7] := 2 6;
+set KWORSE[48,8] :=;
+set KWORSE[48,9] :=;
+set KWORSE[48,10] :=;
+set KWORSE[48,11] :=;
+set KWORSE[48,12] := 2 6 7;
+set KWORSE[48,13] :=;
+set KWORSE[48,14] :=;
+set KWORSE[48,15] :=;
+set KWORSE[49,1] :=;
+set KWORSE[49,2] :=;
+set KWORSE[49,3] :=;
+set KWORSE[49,4] :=;
+set KWORSE[49,5] :=;
+set KWORSE[49,6] :=;
+set KWORSE[49,7] :=;
+set KWORSE[49,8] :=;
+set KWORSE[49,9] :=;
+set KWORSE[49,10] := 7;
+set KWORSE[49,11] :=;
+set KWORSE[49,12] :=;
+set KWORSE[49,13] := 7 10;
+set KWORSE[49,14] := 7 10 13;
+set KWORSE[49,15] :=;
+set KWORSE[50,1] :=;
+set KWORSE[50,2] :=;
+set KWORSE[50,3] :=;
+set KWORSE[50,4] :=;
+set KWORSE[50,5] :=;
+set KWORSE[50,6] :=;
+set KWORSE[50,7] :=;
+set KWORSE[50,8] :=;
+set KWORSE[50,9] :=;
+set KWORSE[50,10] :=;
+set KWORSE[50,11] :=;
+set KWORSE[50,12] := 9;
+set KWORSE[50,13] :=;
+set KWORSE[50,14] := 9 12;
+set KWORSE[50,15] := 9 12 14;
+
+param prices :=
+    1 1
+    2 2
+    3 3
+    4 4
+    5 6
+    6 7
+    7 8
+    8 9
+    9 10
+    10 12
+    11 13
+    12 14
+    13 15
+    14 16
+    15 17
+    16 18
+    17 19
+    18 20;
+
+param budgets :=
+    1 17
+    2 18
+    3 3
+    4 7
+    5 4
+    6 17
+    7 18
+    8 15
+    9 15
+    10 10
+    11 15
+    12 14
+    13 1
+    14 14
+    15 7
+    16 18
+    17 7
+    18 12
+    19 18
+    20 10
+    21 7
+    22 11
+    23 18
+    24 15
+    25 6
+    26 15
+    27 11
+    28 13
+    29 2
+    30 16
+    31 14
+    32 17
+    33 18
+    34 13
+    35 17
+    36 8
+    37 8
+    38 4
+    39 15
+    40 9
+    41 11
+    42 12
+    43 14
+    44 14
+    45 13
+    46 12
+    47 1
+    48 7
+    49 8
+    50 5;
+
+param capacities :=
+    1 4
+    2 3
+    3 3
+    4 4
+    5 4
+    6 3
+    7 4
+    8 5
+    9 2
+    10 3
+    11 4
+    12 4
+    13 5
+    14 5
+    15 4;
+

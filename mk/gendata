@@ -9,10 +9,10 @@ import sys
 randomseed   = 10
 numinstances = 3
 
-numclients    =  30
+numclients    =  50
 maxnumbudgets =  10
 maxbudget     =  20
-numsitems     = [ 5, 15, 25]
+numsitems     = [ 5, 15, 25, 35, 45]
 percpreferred = [10, 25, 50]
 
 

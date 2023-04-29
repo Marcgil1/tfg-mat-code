@@ -5,6 +5,7 @@ import csv
 import logging
 import math
 import pathlib
+import shutil
 import sys
 import timeit
 
@@ -17,6 +18,8 @@ from rich.progress import Progress
 
 AMPL_PATH  = '/Users/marcgile/SourceProgs/ampl/ampl'
 TIME_LIMIT = 600.0
+MAX_NODES  = 1000000 # This is not a limitation imposed on the solver;
+                     # the result plots.
 
 models = {
     'sll':   ['ampl/sll1.mod',   'ampl/sll2.mod'  ],
@@ -24,14 +27,14 @@ models = {
 }
 
 latex_model_name = {
-    'sll1':   '\ensuremath{\mathbf{(SLL}_1\mathbf{)}}',
-    'sll2':   '\ensuremath{\mathbf{(SLL}_2\mathbf{)}}',
-    'efsll1': '\ensuremath{\mathbf{(EF-SLL}_1\mathbf{)}}',
-    'efsll2': '\ensuremath{\mathbf{(EF-SLL}_2\mathbf{)}}',
+    'sll1':   '$\mathbf{(SLL}_1\mathbf{)}$',
+    'sll2':   '$\mathbf{(SLL}_2\mathbf{)}$',
+    'efsll1': '$\mathbf{(EF-SLL}_1\mathbf{)}$',
+    'efsll2': '$\mathbf{(EF-SLL}_2\mathbf{)}$',
 }
 
 numinstances  =   3
-numsitems     = [ 5, 15, 25]
+numsitems     = [ 5, 15, 25, 35, 45]
 percpreferred = [10, 25, 50]
 
 def getampl():
@@ -82,7 +85,7 @@ def parse_solve_message(msg):
     return int(msg)
 
 def runsolver(log, form, instances):
-    with Progress() as pbar:
+    with Progress(transient=True) as pbar:
         pbartask = pbar.add_task(
             'Running the solver...',
             len(models[form])*len(numsitems)*len(percpreferred)*numinstances
@@ -127,6 +130,8 @@ def printrawresults(log, form, datadir, results):
     if not path.is_dir():
         path.mkdir()
     path /= datadir
+    if path.exists():
+        shutil.rmtree(path)
     path.mkdir()
 
     with open(path / 'raw-output.csv', 'w') as fd:
@@ -216,12 +221,60 @@ def printlatextables(log, form, datadir, results):
         printlatexbottom (put, results)
     log.info('Printed latex tables')
 
+def percent_time_instances(t, model_res):
+    leq_t = 0
+    total = 0
+    for _, numitems_res in model_res:
+        for _, perc_res in numitems_res:
+            for _, (_, tp, _) in perc_res:
+                leq_t += int(tp <= t)
+                total += 1
+    return 100 * leq_t / total
+
+def percent_node_instances(n, model_res):
+    leq_n = 0
+    total = 0
+    for _, numitems_res in model_res:
+        for _, perc_res in numitems_res:
+            for _, (np, _, _) in perc_res:
+                leq_n += int(np <= n)
+                total += 1
+    return 100 * leq_n / total
+
+def printcustomplot(form, datadir, results, func, limit, xlabel, figname):
+    fig, ax = plt.subplots()
+    tt      = np.linspace(0, limit)
+    for model, model_res in results:
+        yy = []
+        for t in tt:
+            yy += [func(t, model_res)]
+        ax.plot(tt, yy, label=latex_model_name[model])
+
+    ax.legend    ()
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel('Solved instances (%)')
+
+    respath = pathlib.Path('results') / form / datadir
+    fig.savefig(respath / ("%s.pdf" % figname))
+
 def printplots(log, form, datadir, results):
+    printcustomplot(
+        form, datadir, results,
+        percent_time_instances,
+        limit  =TIME_LIMIT,
+        xlabel ='Time (s)',
+        figname='plt-time')
+    printcustomplot(
+        form, datadir, results,
+        percent_node_instances,
+        limit  =MAX_NODES,
+        xlabel ='Nodes in the branching tree',
+        figname='plt-node')
     log.info('Printed plots')
 
 def getlogger():
     logging.basicConfig(
-        level="NOTSET",
+        level="INFO",
         format="%(message)s",
         datefmt="[%X]",
         handlers=[
@@ -237,7 +290,6 @@ if __name__ == '__main__':
     instances     = getdata  (log, form, datadir)
     
     results = runsolver(log, form, instances)
-    print(results)
 
     printrawresults (log, form, datadir, results)
     printlatextables(log, form, datadir, results)
