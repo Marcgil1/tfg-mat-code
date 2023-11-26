@@ -42,7 +42,7 @@ def getampl():
     ampl = amplpy.AMPL()
     ampl.option['solver'      ] = 'cplex'
     ampl.option['solver_msg'  ] = '0'
-    ampl.option['cplex_option'] = 'timelimit=%.1f' % TIME_LIMIT
+    #ampl.option['cplex_option'] = '\'timelimit=%.1f\'' % TIME_LIMIT
     return ampl
 
 def parseargs():
@@ -242,20 +242,37 @@ def percent_node_instances(n, model_res):
     return 100 * leq_n / total
 
 def printcustomplot(form, datadir, results, func, limit, xlabel, figname):
-    fig, ax = plt.subplots()
     tt      = np.linspace(0, limit)
+    yy      = {}
     for model, model_res in results:
-        yy = []
+        yy[model] = []
         for t in tt:
-            yy += [func(t, model_res)]
-        ax.plot(tt, yy, label=latex_model_name[model])
+            yy[model] += [func(t, model_res)]
+
+    fig, ax = plt.subplots()
+    for model, _ in results:
+        ax.plot(tt, yy[model], label=latex_model_name[model])
 
     ax.legend    ()
     ax.set_xlabel(xlabel)
     ax.set_ylabel('Solved instances (%)')
+    ax.set_xscale('linear')
 
     respath = pathlib.Path('results') / form / datadir
-    fig.savefig(respath / ("%s.pdf" % figname))
+    fig.savefig(respath / ("%s-lin.pdf" % figname))
+
+    fig, ax = plt.subplots()
+    for modlel, _ in results:
+        ax.plot(tt, yy[model], label=latex_model_name[model])
+
+    ax.legend    ()
+    ax.set_xlabel("%s (log scale)" % xlabel)
+    ax.set_ylabel('Solved instances (%)')
+    ax.set_xscale('log')
+
+    respath = pathlib.Path('results') / form / datadir
+    fig.savefig(respath / ("%s-log.pdf" % figname))
+    
 
 def printplots(log, form, datadir, results):
     printcustomplot(
